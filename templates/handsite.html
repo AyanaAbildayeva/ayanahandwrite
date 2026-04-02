@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Жазуды тану</title>
+    <style>
+        body { text-align: center; font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .card { background: white; max-width: 600px; margin: auto; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        canvas { border: 4px solid #333; background-color: #000; border-radius: 12px; cursor: crosshair; touch-action: none; }
+        .btns { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
+        button { padding: 12px 30px; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-clear { background: #ff4757; color: white; }
+        .btn-go { background: #2ed573; color: white; }
+        button:hover { transform: translateY(-2px); opacity: 0.9; }
+        #res-box { margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; }
+        #result { font-size: 28px; color: #2f3542; font-weight: 800; min-height: 40px; }
+        .hint { font-size: 14px; color: #747d8c; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Абилдаева Аяна Ип 24-6кс</h2>
+    <h2> Қолжазбаны тану</h2>
+    <p class="hint">Әріптерді анық, баспа түрінде жазсаңыз, нәтиже жақсы болады.</p>
+    
+    <canvas id="canvas" width="500" height="300"></canvas>
+    
+    <div class="btns">
+        <button class="btn-clear" onclick="clearCanvas()">Тазалау</button>
+        <button class="btn-go" onclick="recognize()">Тану</button>
+    </div>
+
+    <div id="res-box">
+        <div style="color: #a4b0be;">Нәтиже:</div>
+        <div id="result">...</div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+
+    
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 12;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    function startDrawing(e) {
+        isDrawing = true;
+        draw(e);
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+        ctx.beginPath();
+    }
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById('result').innerText = "...";
+    }
+
+    async function recognize() {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerText = "Ойлануда...";
+        
+        const dataURL = canvas.toDataURL('image/png');
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: dataURL })
+            });
+            const data = await response.json();
+            resultDiv.innerText = data.text;
+        } catch (err) {
+            resultDiv.innerText = "Серверге қосылу қатесі";
+        }
+    }
+</script>
+
+</body>
+</html>

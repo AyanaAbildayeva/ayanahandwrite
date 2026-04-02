@@ -1,0 +1,17 @@
+
+# Python уақытша файлдары
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Виртуалды орта (егер қолдансаң)
+venv/
+env/
+.env
+
+# EasyOCR жүктейтін модельдер (өте үлкен файлдар)
+.EasyOCR/
+
+# OS файлдары
+.DS_Store
+Thumbs.db
